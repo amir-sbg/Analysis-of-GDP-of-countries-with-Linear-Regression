@@ -1,13 +1,15 @@
 import pandas as pd
-import os, numpy
-
+import os, numpy,math
+import numpy as np
+import statsmodels.api as sm
+from numpy import NaN
 if __name__ == '__main__':
 
     result_file = "output.xls"
     inputDataFrames = []
     numberOfInputFiles = 15
     for filename in os.listdir("InputData"):
-        if "WEO" not in filename:
+        # if "WEO" not in filename:
             inputDataFrames.append(pd.read_excel("InputData/" + filename))
 
     outputDataFrame = pd.DataFrame(columns=(inputDataFrames[0]).columns)
@@ -19,9 +21,11 @@ if __name__ == '__main__':
 
     x = 0
     decomposedInputData = []
+    xNames=[]
     for i in range(3, len(inputDataFrames[0])):
         y = 0
         for inputDataFrame in inputDataFrames:
+            xNames.append((inputDataFrame.iloc[7:8,2:3 ].values).tolist()[0])
             k = list(inputDataFrame.iloc[i:i + 1, :].keys())
             v = ((inputDataFrame.iloc[i:i + 1, :].values).tolist()[0])
             outputDataFrame.loc[(x * len(inputDataFrames)) + i + y] = v
@@ -32,7 +36,6 @@ if __name__ == '__main__':
         x += 1
     try:
         outputDataFrame.to_excel(result_file, index=False)
-        print("hello")
     except  FutureWarning:
         print("FutureWarning!")
 
@@ -56,11 +59,82 @@ if __name__ == '__main__':
     # print(decomposedInputData)
     # decomposedInputData=numpy.array((decomposedInputData[i][4:]))
     # print(len(countriesInputDict.keys()))
+
+    # for i in countriesInputDict.keys():
+    #     print(i)  # ,"    -   ",countriesDict[i])
+    #     countriesOutputDict[i]
+    #     for j in countriesInputDict[i]:
+    #         print("\t",j)
+    #
+    # for i in countriesOutputDict.keys():
+    #     print(i," :: ",len(countriesOutputDict[i]))
+
+    # print(list(countriesInputDict.keys()))
+    countriesInputDictPlus = {}
     for i in countriesInputDict.keys():
-        print(i)  # ,"    -   ",countriesDict[i])
-        countriesOutputDict[i]
-        for j in countriesInputDict[i]:
-            print("\t",j)
+        tmp1=[]
+        tempo=None
+        for t in countriesInputDict.keys():
+            tempo=t
+            break
+        # print("---")
+
+
+        for j in range (0,len(countriesInputDict[tempo][0])):
+            tmp2=[]
+            for k in range(0,len(list(countriesInputDict[i]))):
+                # print(i,"   -   ",k,"   -   ",j)
+                tmp2.append(countriesInputDict[i][k][j])
+            tmp1.append(tmp2)
+        countriesInputDictPlus[i]=tmp1
+    # print(len(countriesInputDictPlus["USA"]))
+
+    # for i in countriesInputDictPlus.keys():
+    #     print(i)
+    #     for j in countriesInputDictPlus[i]:
+    #         print("\t\t",j)
+    for i in countriesOutputDict.keys():
+        # print(type(countriesInputDictPlus[i]))
+        for j in countriesInputDictPlus[i]:
+            # print(j)
+            for x in range(len(j)):
+                if math.isnan(j[x]):
+                    j[x]=0.0
+                    # print(j[x])
+    for i in countriesOutputDict.keys():
+        # print(type(countriesInputDictPlus[i]))
+        for j in countriesInputDictPlus[i]:
+            # print(len(j))
+            for x in range(len(j)):
+                if math.isnan(j[x]):
+                    countriesInputDictPlus[i][j][x]=NaN
+                    print(j[x])
+
+
+    for i in range(len(xNames)):
+        xNames[i]=xNames[i][0]
+
+    xNames.remove('GDP per capita growth (annual %)')
+
+
+    for i in range(len(xNames)):
+        while len(xNames[i])<=70:
+            xNames[i]=xNames[i]+" "
+    xNames=set(xNames)
+    print("--", (list(xNames)))
 
     for i in countriesOutputDict.keys():
-        print(i," : ",countriesOutputDict[i])
+        print("------------------------------------------",i,"-------------------------------------------")
+        print(countriesInputDictPlus[i])
+        print(countriesOutputDict[i],"\n\n")
+        x=countriesInputDictPlus[i]
+        y=countriesOutputDict[i]
+        x, y = np.array(x), np.array(y)
+        x = sm.add_constant(x)
+        model = sm.OLS(y, x,missing="drop")
+        results = model.fit()
+        print(results.summary(xname=xNames))
+
+
+
+
