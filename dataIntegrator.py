@@ -1,20 +1,22 @@
 import pandas as pd
-import os, numpy,math
+import os,math
 import numpy as np
 import statsmodels.api as sm
 from numpy import NaN
+
 if __name__ == '__main__':
 
     result_file = "output.xls"
     inputDataFrames = []
     numberOfInputFiles = 15
     for filename in os.listdir("InputData"):
-        # if "WEO" not in filename:
+
             inputDataFrames.append(pd.read_excel("InputData/" + filename))
 
     outputDataFrame = pd.DataFrame(columns=(inputDataFrames[0]).columns)
 
     pd.set_option("display.max_rows", None, "display.max_columns", None)
+
     for i in range(0, 3):
         vector = ((inputDataFrames[0].iloc[i:i + 1, :].values).tolist()[0])
         outputDataFrame.loc[i] = vector
@@ -29,7 +31,6 @@ if __name__ == '__main__':
             k = list(inputDataFrame.iloc[i:i + 1, :].keys())
             v = ((inputDataFrame.iloc[i:i + 1, :].values).tolist()[0])
             outputDataFrame.loc[(x * len(inputDataFrames)) + i + y] = v
-            # print((x * len(inputDataFrames)) + i + y, "    ,    ", v)
             decomposedInputData.append(v)
 
             y += 1
@@ -51,25 +52,11 @@ if __name__ == '__main__':
             countriesOutputDict[decomposedInputData[i][1]] = decomposedInputData[i][4:]
 
 
-        # print(i, "    :    ", (decomposedInputData[i]))#,"  ->  ",(decomposedInputData[i][4:]))
 
         if (i + 1) % numberOfInputFiles == 0 and i != len(decomposedInputData) - 1:
             countriesInputDict[decomposedInputData[i + 1][1]] = []
 
-    # print(decomposedInputData)
-    # decomposedInputData=numpy.array((decomposedInputData[i][4:]))
-    # print(len(countriesInputDict.keys()))
 
-    # for i in countriesInputDict.keys():
-    #     print(i)  # ,"    -   ",countriesDict[i])
-    #     countriesOutputDict[i]
-    #     for j in countriesInputDict[i]:
-    #         print("\t",j)
-    #
-    # for i in countriesOutputDict.keys():
-    #     print(i," :: ",len(countriesOutputDict[i]))
-
-    # print(list(countriesInputDict.keys()))
     countriesInputDictPlus = {}
     for i in countriesInputDict.keys():
         tmp1=[]
@@ -87,28 +74,15 @@ if __name__ == '__main__':
                 tmp2.append(countriesInputDict[i][k][j])
             tmp1.append(tmp2)
         countriesInputDictPlus[i]=tmp1
-    # print(len(countriesInputDictPlus["USA"]))
 
-    # for i in countriesInputDictPlus.keys():
-    #     print(i)
-    #     for j in countriesInputDictPlus[i]:
-    #         print("\t\t",j)
     for i in countriesOutputDict.keys():
-        # print(type(countriesInputDictPlus[i]))
+
         for j in countriesInputDictPlus[i]:
-            # print(j)
-            for x in range(len(j)):
-                if math.isnan(j[x]):
-                    j[x]=0.0
-                    # print(j[x])
-    for i in countriesOutputDict.keys():
-        # print(type(countriesInputDictPlus[i]))
-        for j in countriesInputDictPlus[i]:
-            # print(len(j))
+          
             for x in range(len(j)):
                 if math.isnan(j[x]):
                     countriesInputDictPlus[i][j][x]=NaN
-                    print(j[x])
+
 
 
     for i in range(len(xNames)):
@@ -121,12 +95,10 @@ if __name__ == '__main__':
         while len(xNames[i])<=70:
             xNames[i]=xNames[i]+" "
     xNames=set(xNames)
-    print("--", (list(xNames)))
+
 
     for i in countriesOutputDict.keys():
-        print("------------------------------------------",i,"-------------------------------------------")
-        print(countriesInputDictPlus[i])
-        print(countriesOutputDict[i],"\n\n")
+
         x=countriesInputDictPlus[i]
         y=countriesOutputDict[i]
         x, y = np.array(x), np.array(y)
