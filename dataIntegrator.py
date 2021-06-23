@@ -1,18 +1,18 @@
 import pandas as pd
-import os,math
+import os, math
 import numpy as np
 import statsmodels.api as sm
 from numpy import NaN
 
 if __name__ == '__main__':
-
+    #name of integrted output file is outpu.xls
     result_file = "output.xls"
     inputDataFrames = []
     numberOfInputFiles = 15
+    #read all input files as data frame and add them to inputDataFrames list
     for filename in os.listdir("InputData"):
-
-            inputDataFrames.append(pd.read_excel("InputData/" + filename))
-
+        inputDataFrames.append(pd.read_excel("InputData/" + filename))
+    #initialize output data frame
     outputDataFrame = pd.DataFrame(columns=(inputDataFrames[0]).columns)
 
     pd.set_option("display.max_rows", None, "display.max_columns", None)
@@ -23,11 +23,11 @@ if __name__ == '__main__':
 
     x = 0
     decomposedInputData = []
-    xNames=[]
+    xNames = []
     for i in range(3, len(inputDataFrames[0])):
         y = 0
         for inputDataFrame in inputDataFrames:
-            xNames.append((inputDataFrame.iloc[7:8,2:3 ].values).tolist()[0])
+            xNames.append((inputDataFrame.iloc[7:8, 2:3].values).tolist()[0])
             k = list(inputDataFrame.iloc[i:i + 1, :].keys())
             v = ((inputDataFrame.iloc[i:i + 1, :].values).tolist()[0])
             outputDataFrame.loc[(x * len(inputDataFrames)) + i + y] = v
@@ -51,62 +51,49 @@ if __name__ == '__main__':
         else:
             countriesOutputDict[decomposedInputData[i][1]] = decomposedInputData[i][4:]
 
-
-
         if (i + 1) % numberOfInputFiles == 0 and i != len(decomposedInputData) - 1:
             countriesInputDict[decomposedInputData[i + 1][1]] = []
 
-
     countriesInputDictPlus = {}
     for i in countriesInputDict.keys():
-        tmp1=[]
-        tempo=None
+        tmp1 = []
+        tempo = None
         for t in countriesInputDict.keys():
-            tempo=t
+            tempo = t
             break
         # print("---")
 
-
-        for j in range (0,len(countriesInputDict[tempo][0])):
-            tmp2=[]
-            for k in range(0,len(list(countriesInputDict[i]))):
+        for j in range(0, len(countriesInputDict[tempo][0])):
+            tmp2 = []
+            for k in range(0, len(list(countriesInputDict[i]))):
                 # print(i,"   -   ",k,"   -   ",j)
                 tmp2.append(countriesInputDict[i][k][j])
             tmp1.append(tmp2)
-        countriesInputDictPlus[i]=tmp1
+        countriesInputDictPlus[i] = tmp1
 
     for i in countriesOutputDict.keys():
 
         for j in countriesInputDictPlus[i]:
-          
+
             for x in range(len(j)):
                 if math.isnan(j[x]):
-                    countriesInputDictPlus[i][j][x]=NaN
-
-
+                    countriesInputDictPlus[i][j][x] = NaN
 
     for i in range(len(xNames)):
-        xNames[i]=xNames[i][0]
+        xNames[i] = xNames[i][0]
 
     xNames.remove('GDP per capita growth (annual %)')
 
-
     for i in range(len(xNames)):
-        while len(xNames[i])<=70:
-            xNames[i]=xNames[i]+" "
-    xNames=set(xNames)
-
+        while len(xNames[i]) <= 70:
+            xNames[i] = xNames[i] + " "
+    xNames = set(xNames)
 
     for i in countriesOutputDict.keys():
-
-        x=countriesInputDictPlus[i]
-        y=countriesOutputDict[i]
+        x = countriesInputDictPlus[i]
+        y = countriesOutputDict[i]
         x, y = np.array(x), np.array(y)
         x = sm.add_constant(x)
-        model = sm.OLS(y, x,missing="drop")
+        model = sm.OLS(y, x, missing="drop")
         results = model.fit()
         print(results.summary(xname=xNames))
-
-
-
-
